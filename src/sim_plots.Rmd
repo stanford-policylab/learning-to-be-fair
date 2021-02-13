@@ -1,0 +1,253 @@
+---
+title: "R Notebook"
+output: 
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup}
+require(tidyverse)
+require(glue)
+require(scales)
+
+theme_set(theme_bw(base_size = 14))
+
+```
+
+
+```{r import_data}
+
+
+data_dir <- "/share/data/nudge/simulations/fair_allocation/run_2/"
+sim_files <- fs::dir_ls(data_dir, regexp = "\\.rds$")
+
+sim_output <- sim_files %>% 
+  map_dfr(read_rds)
+
+# Add cumulative counts
+training_runs <- sim_output %>% 
+  group_by(sim_num, method) %>% 
+  mutate(total_treatment_expected_utility = total_overall_expected_utility - baseline_all_control_utility,
+         cumulative_transits = cumsum(if_else(person_ix < 25, 0, transit_decision)),
+         cumulative_rideshares = cumsum(if_else(person_ix < 25, 0, rideshare_decision))) %>% 
+  relocate(cumulative_decision_utility, .after = decision_utility) %>% 
+  relocate(cumulative_transits, .after = transit_decision) %>% 
+  relocate(cumulative_rideshares, .after = rideshare_decision) %>% 
+  ungroup()
+
+# Post simulation tweaks
+training_runs <- training_runs %>% 
+  mutate(method = as.character(method),
+         method = case_when(method == "Greedy" ~ "ɛ-Greedy",
+                            method == "RCT to 50" ~ "RCT to 75",
+                            method == "RCT to 100" ~ "RCT to 125",
+                            method == "RCT to 150" ~ "RCT to 175",
+                            TRUE ~ method))
+
+training_runs %>% 
+  distinct(sim_num) %>% 
+  count()
+
+
+```
+
+
+```{r policy_performance_plot}
+
+num_training <- max(training_runs$person_ix)
+num_sims <- length(unique(training_runs$sim_num))
+
+brewer_set2_modified <- c('#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#a65628','#f781bf','#999999')
+
+
+# Best guess pct of optimal
+oracle_bestguess <- training_runs %>% 
+  filter(method == "Oracle") %>% 
+  select(sim_num, person_ix, optimal_utility = total_treatment_expected_utility)
+pct_of_optimal <- training_runs %>% 
+  filter(method != "Oracle") %>% 
+  left_join(oracle_bestguess, by = c("sim_num", "person_ix")) %>% 
+  mutate(pct_optimal_utility = total_treatment_expected_utility / optimal_utility) %>% 
+  filter(!is.na(pct_optimal_utility)) %>% 
+  group_by(method, person_ix) %>% 
+  summarize(mean = mean(pct_optimal_utility),
+            sd = sd(pct_optimal_utility),
+            se = sd / sqrt(n()),
+            ci_size = se * 2,
+            ci_upper = mean + ci_size,
+            ci_lower = mean - ci_size) %>% 
+  rename(Method = method)
+pct_of_optimal %>% 
+  ggplot(aes(x = person_ix, y = mean, color = Method)) +
+  geom_line(size = 0.75) +
+  geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper, fill = Method), alpha = 0.2, color = NA) +
+  geom_hline(yintercept = 1, color = "dimgray", linetype = "dashed") +
+  xlab("Iteration 𝒾") + ylab("Performance compared to oracle") +
+  theme(axis.title.x = ggtext::element_markdown()) +
+  coord_cartesian(ylim = c(0.8, 1)) +
+  scale_colour_manual(values = brewer_set2_modified, aesthetics = c("colour", "fill"),
+                      breaks = c("UCB",
+                                 "Thompson",
+                                 "RCT",
+                                 "RCT to 175",
+                                 "RCT to 125",
+                                 "RCT to 75",
+                                 "ɛ-Greedy")) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  theme(legend.position = c(0.83, 0.28), 
+        legend.title = element_blank(),
+        legend.background = element_rect(fill = alpha("white", 0.7), colour = NA, size = 0)) + 
+  ggsave(filename = "pct_of_optimal.pdf", 
+       width = 7, height = 5,
+       device=cairo_pdf)
+```
+
+
+```{r regret_plot}
+# Regret
+# cumulative_decision_utility
+oracle_trialtreat <- training_runs %>% 
+  filter(method == "Oracle") %>% 
+  select(sim_num, person_ix, optimal_cumulative_decision_utility = cumulative_decision_utility)
+regrets <- training_runs %>% 
+  filter(method != "Oracle") %>% 
+  left_join(oracle_trialtreat, by = c("sim_num", "person_ix")) %>% 
+  mutate(regret = optimal_cumulative_decision_utility - cumulative_decision_utility) %>% 
+  filter(!is.na(regret)) %>% 
+  group_by(method, person_ix) %>% 
+  summarize(mean = mean(regret),
+            sd = sd(regret),
+            se = sd / sqrt(n()),
+            ci_size = se * 2,
+            ci_upper = mean + ci_size,
+            ci_lower = mean - ci_size) %>% 
+  rename(Method = method)
+regrets %>% 
+  ggplot(aes(x = person_ix, y = mean, color = Method)) +
+  geom_line(size = 0.75) +
+  geom_hline(yintercept = 0, color = "dimgray", linetype = "dashed") +
+  geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper, fill = Method), alpha = 0.2, color = NA) +
+  xlab("Iteration 𝒾") + ylab("Regret (lost utility)") +
+  scale_colour_manual(values = brewer_set2_modified, aesthetics = c("colour", "fill"),
+                      breaks = c("RCT",
+                                 "RCT to 75",
+                                 "RCT to 125",
+                                 "RCT to 175",
+                                 "ɛ-Greedy",
+                                 "Thompson",
+                               "UCB")) +
+  theme(legend.position = c(0.17, 0.72), 
+        legend.title = element_blank(),
+        legend.background = element_rect(fill = alpha("white", 0.7), colour = NA, size = 0)) +
+  ggsave(filename = "regret.pdf", 
+     width = 7, height = 5,
+     device=cairo_pdf)
+
+```
+
+
+```{r ride_spending_subpop_plot}
+
+brewer_set2_modified_woracle <- c('#e41a1c', "dimgray", '#377eb8','#4daf4a','#984ea3','#ff7f00','#a65628','#f781bf','#999999')
+
+ride_spending <- training_runs %>% 
+  filter(person_ix > 25) %>% 
+  group_by(method, sim_num) %>% 
+  mutate(in_subpop = proximity > 2 * poverty,
+         cumulative_rides = cumsum(rideshare_decision * in_subpop)) %>% 
+  ungroup() %>% group_by(method, person_ix) %>% 
+  summarize(mean_cumulative_rides = mean(cumulative_rides),
+            sd = sd(cumulative_rides),
+            se = sd / sqrt(n()),
+            ci_size = se * 2,
+            ci_upper = mean_cumulative_rides + ci_size,
+            ci_lower = mean_cumulative_rides - ci_size) %>% 
+  ungroup() %>% 
+  rename(Method = method)
+
+ride_spending %>% 
+  ggplot(aes(x = person_ix, y = mean_cumulative_rides, color = Method)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper, fill = Method), alpha = 0.2, color = NA) +
+  ylab("Mean cumulative rides for subpopulation") + xlab("Iteration 𝒾") +
+  scale_colour_manual(values = brewer_set2_modified_woracle, aesthetics = c("colour", "fill"),
+                      breaks = c("RCT",
+                                 "RCT to 175",
+                                 "RCT to 125",
+                                 "RCT to 75",
+                                 "ɛ-Greedy",
+                                 "Thompson",
+                                 "UCB",
+                                 "Oracle")) +
+  theme(legend.position = c(0.17, 0.72), 
+        legend.title = element_blank(),
+        legend.background = element_rect(fill = alpha("white", 0.7), colour = NA, size = 0)) +
+  ggsave(filename = "ride_spending.pdf", 
+     width = 7, height = 5,
+     device=cairo_pdf)
+
+```
+
+
+```{r budget_adherence_plot}
+
+# Budgets
+rideshare_budget <- training_runs %>%
+  filter(person_ix > 25) %>%
+  group_by(method, person_ix) %>%
+  summarize(mean = mean(cumulative_rideshares),
+            sd = sd(cumulative_rideshares),
+            se = sd / sqrt(n()),
+            ci_size = se * 2,
+            ci_upper = mean + ci_size,
+            ci_lower = mean - ci_size) %>%
+  rename(Method = method) %>% 
+  mutate(group_sep = str_c(Method, "rideshare"))
+
+transit_budget <- training_runs %>%
+  filter(person_ix > 25) %>%
+  group_by(method, person_ix) %>%
+  summarize(mean = mean(cumulative_transits),
+            sd = sd(cumulative_transits),
+            se = sd / sqrt(n()),
+            ci_size = se * 2,
+            ci_upper = mean + ci_size,
+            ci_lower = mean - ci_size) %>%
+  rename(Method = method) %>% 
+  mutate(group_sep = str_c(Method, "transit"))
+
+budget_spending <- 
+  bind_rows(rideshare_budget,
+            transit_budget)
+
+budget_spending %>% 
+  ggplot(aes(x = person_ix, y = mean, color = Method, group = group_sep)) +
+  annotate("label", x = num_training + 5, y = (num_training - 25) * 0.2, label = "Vouchers", label.size = 0, hjust = "left") +
+  annotate("label", x = num_training + 5, y = (num_training - 25) * 0.05, label = "Rides", label.size = 0, hjust = "left") +
+  geom_line() +
+  geom_segment(aes(x = 25, y = 0, xend = num_training, yend = (num_training - 25) * 0.2), color = "dimgray", linetype = "dashed") +
+  geom_segment(aes(x = 25, y = 0, xend = num_training, yend = (num_training - 25) * 0.05), color = "dimgray", linetype = "dotted") +
+  # geom_ribbon(aes(ymin = lower, ymax = upper, fill = Method), alpha = 0.3, color = NA) +
+  xlab("Iteration 𝒾") +
+  ylab("Number of treatments") +
+  scale_colour_manual(values = brewer_set2_modified_woracle, aesthetics = c("colour", "fill"),
+                      breaks = c("RCT",
+                                 "RCT to 175",
+                                 "RCT to 125",
+                                 "RCT to 75",
+                                 "ɛ-Greedy",
+                                 "Thompson",
+                                 "UCB",
+                                 "Oracle")) +
+  scale_x_continuous(breaks = seq(0,1000,250)) + 
+  coord_cartesian(xlim = c(0, 1100)) +
+  theme(legend.position = c(0.17, 0.72), 
+        legend.title = element_blank(),
+        legend.background = element_rect(fill = alpha("white", 0.7), colour = NA, size = 0)) +
+  ggsave(filename = "budget_adherence.pdf", 
+   width = 7, height = 5,
+   device=cairo_pdf)
+
+```
+
