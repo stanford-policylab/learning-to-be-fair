@@ -29,10 +29,6 @@ calculate_mean_and_ci <- function(data, colname) {
     ungroup()
 }
 
-### NOTES:
-# Run 4 takes about 46 gigs to load into memory
-# Runs 8 & 9 add about 8 gigs, to 54 total? 
-
 ### TO DO:
 # Remove cutoff to 2000 simulations
 # Fix filepaths to work with here()

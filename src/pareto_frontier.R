@@ -1,21 +1,20 @@
 # Load necessary libraries
-require(tidyverse)
-require(here)
+library(tidyverse)
 
 theme_set(theme_bw())
 
 # Parameters -------------------------------------------------------------------
-n_clients                <- 10000 # Total number of clients
-fixed_budget             <- 50000 # Fixed budget
-cost_per_mile            <- 5 * 2 # Two way
-mean_distance_white      <- 2     # Average distance for White clients in miles
-mean_distance_black_near <- 1     # Average distance for Black clients in miles
-mean_distance_black_far  <- 10    # Average distance for Black clients in miles
-proportion_near          <- 0.25
-sd_distance_near         <- 1     # Standard deviation for distances
-sd_distance_far          <- 5
-ride_treatment_effect    <- 0.25
-lambda                   <- 0.025
+n_clients <- 10000 # Total number of clients
+fixed_budget <- 50000 # Fixed budget
+cost_per_mile <- 5 * 2 # Two way
+mean_distance_white      <- 2  # Average distance for White clients in miles
+mean_distance_black_near <- 1   # Average distance for Black clients in miles
+mean_distance_black_far  <- 10  # Average distance for Black clients in miles
+proportion_near <- 0.25
+sd_distance_near <- 1 # Standard deviation for distances
+sd_distance_far <- 5
+ride_treatment_effect <- 0.25
+lambda <- 0.025
 
 
 # Create synthetic population --------------------------------------------------
@@ -28,16 +27,18 @@ population <-
     distance = if_else(race == "White",
                        abs(rnorm(n(), mean_distance_white, sd_distance_near)),
                        if_else(runif(n()) < proportion_near,
-                               abs(rnorm(n(), mean_distance_black_near, 
-                                         sd_distance_near)),
-                               abs(rnorm(n(), mean_distance_black_far,  
-                                         sd_distance_far)))),
+                               abs(rnorm(n(), mean_distance_black_near, sd_distance_near)),
+                               abs(rnorm(n(), mean_distance_black_far,  sd_distance_far)))),
     cost = distance * cost_per_mile,
     # Assuming equal treatment effect for simplicity
     treatment_effect = ride_treatment_effect,
     p_0 = 0.75,
     p_1 = p_0 + ride_treatment_effect
-  )
+    )
+
+population %>% 
+  ggplot(aes(x = distance, color = race)) +
+  geom_density()
 
 
 # Function to calculate trade-offs  --------------------------------------------
@@ -66,10 +67,10 @@ calculate_tradeoffs <- function(population, fixed_budget, threshold) {
   average_spending_white <- (treated_white %>%
                                summarize(total_cost = sum(cost)) %>%
                                pull(total_cost)) / (n_clients / 2)
-  
+
   treated_population <- bind_rows(treated_black, treated_white)
   total_appearances <- sum(treated_population$treatment_effect)
-  
+
   return(tibble(threshold, 
                 num_black,
                 num_white,
@@ -146,8 +147,8 @@ labeled_points <- bind_rows(
 
 # Plot Pareto curve  -----------------------------------------------------------
 pareto_frontier <- ggplot(tradeoff_results, 
-                          aes(x = average_spending_black, 
-                              y = total_appearances)) +
+       aes(x = average_spending_black, 
+           y = total_appearances)) +
   geom_vline(aes(xintercept = average_spending_black,
                  color = label),
              alpha = 0.5,
@@ -170,11 +171,13 @@ pareto_frontier <- ggplot(tradeoff_results,
              hjust = 0,
              data = labeled_points) +
   scale_x_continuous(labels = scales::dollar) +
-  scale_color_discrete(guide = "none") +
+  scale_color_discrete(guide = FALSE) +
   labs(title = "", 
        x = "Average spending per Black client", 
        y = "Number of additional appearances") +
   theme_bw(base_size = 14)
+
+pareto_frontier
 
 population %>% 
   summarize(mean(cost), .by = race)
@@ -182,13 +185,12 @@ population %>%
 tradeoff_results %>%
   mutate(spending_break = ((average_spending_black + 0.1) %/% 2.5) * 2.5) %>%
   group_by(spending_break) %>%
-  mutate(distance_to_nearest_break = average_spending_black - 
-           spending_break) %>%
+  mutate(distance_to_nearest_break = average_spending_black - spending_break) %>%
   slice_min(distance_to_nearest_break, with_ties = F) %>% 
   mutate(spending_break =  scales::dollar(spending_break)) %>% 
   select(spending_break, average_spending_black, 
          average_spending_white, total_appearances)
 
-ggsave(here("output", "figure_2.pdf"),
+ggsave("~/Dropbox/Apps/Overleaf/Learning to be fair/figs/pareto_frontier.pdf",
        pareto_frontier,
        width = 7, height = 5)
