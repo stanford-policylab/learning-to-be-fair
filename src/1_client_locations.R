@@ -60,9 +60,9 @@ scc_clients_map <- ggmap(scc_base_map, darken = c(0.7, "white")) +
   annotate("text", 
            x = unlist(scc_courthouse$geometry)[1], 
            y = unlist(scc_courthouse$geometry)[2], 
-           label = "★", size = 10, color = "black",
-           # This font family isn't required, it just makes a nice star!
-           family = "AppleGothic") 
+           label = "★", size = 10, color = "black") #,
+           # This font family isn't required, it just makes a nicer star!
+           # family = "AppleGothic") 
 
 # Export map
 ggsave(here("output", "figure_1a.pdf"),

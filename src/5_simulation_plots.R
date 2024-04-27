@@ -29,23 +29,27 @@ calculate_mean_and_ci <- function(data, colname) {
     ungroup()
 }
 
-### TO DO:
-# Remove cutoff to 2000 simulations
-# Fix filepaths to work with here()
 
 
 ### Import data ----------------------------------------------------------------
-data_dir <- here("data", "run_4")
+# Location of main simulation data
+data_dir                        <- here("data", "simulation_output", 
+                                        "main_sim")
+
+# Location of spending variations simulation data
+data_dir_spending_var_expensive <- here("data", "simulation_output", 
+                                        "spending_vars_expensive")
+data_dir_spending_var_cheaper   <- here("data", "simulation_output", 
+                                        "spending_vars_cheaper")
+
 sim_files <- fs::dir_ls(data_dir, regexp = "\\.rds$")
 sim_output <- sim_files %>% 
   map_dfr(read_rds)
 
-data_dir_spending_variations_expensive <- here("data", "run_8")
 sim_files_spending_variations_expensive <- 
-  fs::dir_ls(data_dir_spending_variations_expensive, regexp = "\\.rds$")
-data_dir_spending_variations_cheaper <- here("data", "run_9")
+  fs::dir_ls(data_dir_spending_var_expensive, regexp = "\\.rds$")
 sim_files_spending_variations_cheaper <- 
-  fs::dir_ls(data_dir_spending_variations_cheaper, regexp = "\\.rds$")
+  fs::dir_ls(data_dir_spending_var_cheaper, regexp = "\\.rds$")
 sim_files_spending_variations <- c(sim_files_spending_variations_expensive,
                                    sim_files_spending_variations_cheaper)
 sim_output_spending_variations <- sim_files_spending_variations %>% 
@@ -113,8 +117,7 @@ figure_4 <- figure_4_data %>%
   theme(legend.position = "none")
 
 ggsave(plot = figure_4,
-       filename = "~/learning-to-be-fair/output/figure_4.pdf",
-       # filename = here("output", "figure_4.pdf"),
+       filename = here("output", "figure_4.pdf"),
        width = 7, height = 5,
        device = cairo_pdf)
 
@@ -164,8 +167,7 @@ figure_5 <- figure_5_data %>%
   theme(legend.position = "none")
 
 ggsave(plot = figure_5,
-       filename = "~/learning-to-be-fair/output/figure_5.pdf",
-       # filename = here("output", "figure_5.pdf"),
+       filename = here("output", "figure_5.pdf"),
        width = 7, height = 5,
        device=cairo_pdf)
 
@@ -257,8 +259,7 @@ figure_6 <- figure_6_data %>%
                                          colour ="dimgray")) 
 
 ggsave(plot = figure_6,
-       filename = "~/learning-to-be-fair/output/figure_6.pdf",
-       # filename = here("output", "figure_6.pdf"),
+       filename = here("output", "figure_6.pdf"),
        width = 7, height = 5,
        device=cairo_pdf)
 
@@ -295,8 +296,7 @@ figure_f2 <- figure_f2_data %>%
                                          colour = NA, linewidth = 0))
 
 ggsave(plot = figure_f2,
-       filename = "~/learning-to-be-fair/output/figure_f2.pdf",
-       # filename = here("output", "figure_f2.pdf"),
+       filename = here("output", "figure_ec2.pdf"),
        width = 7, height = 5, device=cairo_pdf)
 
 
@@ -321,7 +321,6 @@ figure_f3 <- figure_f3_data %>%
   coord_cartesian(xlim = c(0.83, 1.18))
 
 ggsave(plot = figure_f3,
-       filename = "~/learning-to-be-fair/output/figure_f3.pdf",
-       # filename = here("output", "figure_f3.pdf"),
+       filename = here("output", "figure_ec3.pdf"),
        width = 7, height = 5,
        device=cairo_pdf)
