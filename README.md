@@ -58,4 +58,5 @@ Source code is available in the directory `src/`. The main scripts are:
     - `output/figure_6.pdf`
     - `output/figure_ec2.pdf`
     - `output/figure_ec3.pdf`
+    - `Table 2` (output to console)
     
