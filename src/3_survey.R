@@ -124,7 +124,8 @@ race_ethnicity_plot <- responses %>%
                                "Asian" = '#4daf4a',
                                "White" = 'DodgerBlue',
                                "Hispanic" = '#ff7f00'),
-                    guide = "none")
+                    guide = "none") +
+  theme_bw(base_size = 10)
 
 ggsave(here("output", "figure_ec1b.pdf"),
        race_ethnicity_plot,
