@@ -5,3 +5,5 @@
 src/4_simulation/nudge_simulation
 src/4_simulation/__pycache__
 data/*
+.DS_Store
+*.html
