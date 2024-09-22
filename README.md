@@ -14,7 +14,8 @@ Source code is available in the directory `src/`. The main scripts are:
   - **Overview**: This script generates the client location map and our illustration of the consequences of following the naive optimization approach. 
   - **Data description**: These data are described in Section 3.1 of the paper. 
   - **NOTE**: Client locations have been perturbed a random distance to protect privacy.
-  - **NOTE**: You will need to sign up for a Google Maps API key [here](https://developers.google.com/maps/get-started) to recreate the first figure. Instructions:
+  - **NOTE**: You will need to sign up for a Google Maps API key to recreate the first figure. Instructions:
+    - Start at [this link](https://developers.google.com/maps/get-started).
     - Sign in to (or create) your Google account.
     - Agree to the Google Cloud terms of service.
     - Click "Web" under "Platforms" on the left-hand menu.

@@ -6,10 +6,8 @@ require(ggmap)
 
 ### Figure 1a ------------------------------------------------------------------
 
-# First-time users of `ggmap` will need to sign up for a Google API key here:
-# https://mapsplatform.google.com/
-# and then will need to provide their key to the function below: 
-# register_google()
+# First-time users of `ggmap` will need to sign up for a Google API key .
+# See README for instructions.
 
 # Load data
 client_addresses <- read_csv(here("data", "scc_client_map_data_masked.csv")) %>% 
