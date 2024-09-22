@@ -15,7 +15,7 @@ Source code is available in the directory `src/`. The main scripts are:
   - **Data description**: These data are described in Section 3.1 of the paper. 
   - **NOTE**: Client locations have been perturbed a random distance to protect privacy.
   - **NOTE**: You will need to sign up for a Google Maps API key to recreate the first figure. Instructions:
-    - Start at [this link](https://developers.google.com/maps/get-started).
+    - Click "Get Started" at [this link](https://developers.google.com/maps/get-started).
     - Sign in to (or create) your Google account.
     - Agree to the Google Cloud terms of service.
     - Click "Web" under "Platforms" on the left-hand menu.
@@ -100,7 +100,7 @@ Source code is available in the directory `src/`. The main scripts are:
         - Experiments:
           - All possible combinations of transit and rideshare allocations of 0%, 2%, 4%, 6%, and 8% (e.g., 2% transit and 6% rideshare)
           - All possible combinations of transit and rideshare allocations between 10% and 100% by every 10% (e.g., 20% transit and 60% rideshare)
-        - **NOTE**: To run this grid search, toggle comments on code in `run_sim_withcosts.R` that says "Comment/Uncomment this for grid search."
+        - **NOTE**: To run this grid search, toggle comments in `run_sim_withcosts.R` that say "Comment/Uncomment this for grid search."
   - **Inputs**:
     - `data/scc_simulation_population_masked.csv`
   - **Outputs**:
@@ -116,7 +116,7 @@ Source code is available in the directory `src/`. The main scripts are:
     - `data/simulation_output/{sim_name}/{sim_num_2}_x{export_datetime}.rds`
     - `data/simulation_output/{sim_name}/{sim_num_3}_x{export_datetime}.rds`
     - Etc.
-  - **NOTE**: This script is built assuming simulation configurations #1, #2, and #3 above were all run at once and saved to the same folder, `main_sim`. Simulation configuration #4 were saved to two separate folders, `spending_vars_expensive` and `spending_vars_cheaper`. 
+  - **NOTE**: This script is built assuming simulation configurations (a), (b), and (c) above were all run at once and saved to the same folder, `main_sim`. Simulation configuration (d) were saved to two separate folders, `spending_vars_expensive` and `spending_vars_cheaper`. 
   - **Outputs**:
     - `output/figure_4.pdf`
     - `output/figure_5.pdf`
