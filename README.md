@@ -19,13 +19,13 @@ Source code is available in the directory `src/`. The main scripts are:
     - Sign in to (or create) your Google account.
     - Agree to the Google Cloud terms of service.
     - Click "Web" under "Platforms" on the left-hand menu.
-    - On the new left-hand menu that pops up, click "Keys & Credentials"
+    - On the new left-hand menu that pops up, click "Keys & Credentials."
     - Click "Create Project" to create your first Maps project.
     - Set a project name, organization, and location, and create the project.
     - Navigate back to the "Keys & Credentials" tab within the new project you created.
     - If needed, set the Country and add billing information.
-    - Under "Keys & Credentials", click "Create Credentials", and select "API key"
-    - Configure the API key with a name, and restrictions if you desire
+    - Under "Keys & Credentials", click "Create Credentials", and select "API key."
+    - Configure the API key with a name, and restrictions if you desire.
     - You should have an API key now. Back in `R`, use `ggmap::register_google()` to allow `ggmap` to access this key.
   - **Inputs**:
     - `data/scc_client_map_data_masked.csv`
@@ -47,7 +47,7 @@ Source code is available in the directory `src/`. The main scripts are:
     - `output/figure_ec1a.pdf`
     - `output/figure_ec1b.pdf`
 - `4_simulation/`
-  - **Overview**: This directory contains the scripts necessary to run the simulation in Section 6.1 of the paper. 
+  - **Overview**: This directory contains the scripts necessary to run the simulations in Section 6.1 of the paper, as well as associated appendices. 
   - **Data description**: The data used in the simulation are described in Appendix F of the paper.  
   - The main script is `4_simulation/run_sim_withcosts.R`. This script is designed to be run from the root project directory, e.g., using `Rscript src/4_simulation/run_sim_withcosts.R`. 
   - Users will also be required to set up a Python virtual environment using `venv` called `nudge_simulation`. Establish this environment at `src/4_simulation` with the name `nudge_simulation`. Install the necessary Python packages from the `requirements.txt` file before running `run_sim_withcosts.R`, e.g., by calling `pip install -r requirements.txt` with the environment activated.
@@ -116,7 +116,7 @@ Source code is available in the directory `src/`. The main scripts are:
     - `data/simulation_output/{sim_name}/{sim_num_2}_x{export_datetime}.rds`
     - `data/simulation_output/{sim_name}/{sim_num_3}_x{export_datetime}.rds`
     - Etc.
-  - **NOTE**: This script is built assuming simulation configurations (a), (b), and (c) above were all run at once and saved to the same folder, `main_sim`. Simulation configuration (d) were saved to two separate folders, `spending_vars_expensive` and `spending_vars_cheaper`. 
+  - **NOTE**: This script is built assuming simulation configurations (a) and (b) above were run at the same time and saved to the same folder, `main_sim`. In addition, simulation configuration (d) was saved to two separate folders, `spending_vars_expensive` and `spending_vars_cheaper`. 
   - **Outputs**:
     - `output/figure_4.pdf`
     - `output/figure_5.pdf`
