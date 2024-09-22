@@ -69,22 +69,22 @@ run_learning <- function(sim_num) {
   
   # Comment this out for grid search
   treated_pop <- bind_rows(
-    # Use these parameters for the main simulation
+    # Use these experiments for the main simulation
+    experiment(method = "oracle"),
     experiment(method = "random"),
-    experiment(method = "random", ignore_lambda = T),
     experiment(method = "random", stop_early_random = 50),
     experiment(method = "random", stop_early_random = 100),
     experiment(method = "random", stop_early_random = 150),
-    experiment(method = "egreedy"),
-    experiment(method = "egreedy", ignore_lambda = T),
-    experiment(method = "thompson"),
-    experiment(method = "thompson", ignore_lambda = T),
     experiment(method = "UCB"),
-    experiment(method = "UCB", ignore_lambda = T),
-    experiment(method = "oracle"),
-    experiment(method = "oracle", ignore_lambda = T)
+    experiment(method = "thompson"),
+    experiment(method = "egreedy")
+    
+    # Use these experiments, in comparison with the above, to create Table 2
+    # experiment(method = "egreedy", ignore_lambda = T),
+    # experiment(method = "thompson", ignore_lambda = T),
+    # experiment(method = "UCB", ignore_lambda = T),
 
-    # # Use these parameters to replicate Appendix F Paragraph 10 results
+    # # Use these experiments to replicate Appendix F Paragraph 10 results
     # experiment(method = "UCB", num_sim_samples = 2000),
     # experiment(method = "UCB", num_sim_samples = 500),
     # experiment(method = "UCB")
