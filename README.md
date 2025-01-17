@@ -1,6 +1,6 @@
 # Learning to be fair: Replication materials
 
-This repository contains replication materials for our paper, [Learning to be fair: A consequentialist approach to equitable decision-making](https://arxiv.org/abs/2109.08792).
+This repository contains replication materials for our paper, [Learning to be fair: A consequentialist approach to equitable decision-making](https://alexchohlaswood.com/assets/papers/ltbf.pdf) (*Management Science*, 2024).
 
 If you are not viewing this README on GitHub, a more recently updated version may be available at our [online paper repository](https://github.com/stanford-policylab/learning-to-be-fair/).
 
